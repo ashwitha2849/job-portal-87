@@ -87,11 +87,18 @@ const ViewApplications = () => {
                 <td className='py-2 px-4 border-b max-sm:hidden'>{applicant.jobId.title}</td>
                 <td className='py-2 px-4 border-b max-sm:hidden'>{applicant.jobId.location}</td>
                 <td className='py-2 px-4 border-b'>
-                  <a href={applicant.userId.resume} target='_blank'
-                    className='bg-blue-50 text-blue-400 px-3 py-1 rounded inline-flex gap-2 items-center'
-                  >
-                    Resume <img src={assets.resume_download_icon} alt="" />
-                  </a>
+                  {(applicant.resume || (applicant.userId && applicant.userId.resume)) ? (
+                    <a
+                      href={(applicant.resume || applicant.userId.resume).startsWith('http') ? (applicant.resume || applicant.userId.resume) : `${backendUrl}/${applicant.resume || applicant.userId.resume}`}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='bg-blue-50 text-blue-600 hover:bg-blue-100 transition px-3 py-1 rounded inline-flex gap-2 items-center cursor-pointer text-xs font-semibold'
+                    >
+                      Resume <img src={assets.resume_download_icon} alt="" />
+                    </a>
+                  ) : (
+                    <span className='text-gray-400 text-xs italic font-medium'>No Resume</span>
+                  )}
                 </td>
                 <td className='py-2 px-4 border-b relative'>
                   {applicant.status === "Pending"

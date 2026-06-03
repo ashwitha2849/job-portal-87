@@ -9,7 +9,7 @@ const router = express.Router()
 router.get('/user', getUserData)
 
 // Apply for a job
-router.post('/apply', applyForJob)
+router.post('/apply', upload.single('resume'), applyForJob)
 
 // Get applied jobs data
 router.get('/applications', getUserJobApplications)

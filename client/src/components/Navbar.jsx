@@ -20,6 +20,8 @@ const Navbar = () => {
                 {
                     user
                         ? <div className='flex items-center gap-3'>
+                            <Link to={'/resume-builder'} className='text-blue-600 font-medium hover:underline'>AI Resume Builder</Link>
+                            <p>|</p>
                             <Link to={'/applications'}>Applied Jobs</Link>
                             <p>|</p>
                             <p className='max-sm:hidden'>Hi, {user.firstName + " " + user.lastName}</p>
