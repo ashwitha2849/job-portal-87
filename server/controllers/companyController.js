@@ -314,3 +314,42 @@ export const resetCompanyPassword = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
+
+// Update Company Name and Logo
+export const updateCompanyProfile = async (req, res) => {
+    try {
+        const { name } = req.body;
+        const imageFile = req.file;
+        const companyId = req.company._id;
+
+        const company = await Company.findById(companyId);
+        if (!company) {
+            return res.json({ success: false, message: 'Company not found' });
+        }
+
+        if (name) {
+            company.name = name;
+        }
+
+        if (imageFile) {
+            // Upload new logo image to Cloudinary
+            const imageUpload = await cloudinary.uploader.upload(imageFile.path);
+            company.image = imageUpload.secure_url;
+        }
+
+        await company.save();
+
+        res.json({
+            success: true,
+            message: "Profile updated successfully",
+            company: {
+                _id: company._id,
+                name: company.name,
+                email: company.email,
+                image: company.image
+            }
+        });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
