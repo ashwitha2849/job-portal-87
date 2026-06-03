@@ -1,5 +1,5 @@
 import express from 'express'
-import { ChangeJobApplicationsStatus, changeVisiblity, getCompanyData, getCompanyJobApplicants, getCompanyPostedJobs, loginCompany, postJob, registerCompany } from '../controllers/companyController.js'
+import { ChangeJobApplicationsStatus, changeVisiblity, getCompanyData, getCompanyJobApplicants, getCompanyPostedJobs, loginCompany, postJob, registerCompany, forgotCompanyPassword, resetCompanyPassword } from '../controllers/companyController.js'
 import upload from '../config/multer.js'
 import { protectCompany } from '../middleware/authMiddleware.js'
 
@@ -10,6 +10,12 @@ router.post('/register', upload.single('image'), registerCompany)
 
 // Company login
 router.post('/login', loginCompany)
+
+// Forgot Password
+router.post('/forgot-password', forgotCompanyPassword)
+
+// Reset Password
+router.post('/reset-password', resetCompanyPassword)
 
 // Get company data
 router.get('/company', protectCompany, getCompanyData)

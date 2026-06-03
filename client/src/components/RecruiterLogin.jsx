@@ -12,6 +12,8 @@ const RecruiterLogin = () => {
     const [email, setEmail] = useState('')
     const [image, setImage] = useState(false)
     const [isTextDataSubmited, setIsTextDataSubmited] = useState(false)
+    const [otp, setOtp] = useState('')
+    const [newPassword, setNewPassword] = useState('')
     const { setShowRecruiterLogin, backendUrl, setCompanyToken, setCompanyData } = useContext(AppContext)
     const onSubmitHandler = async (e) => {
         e.preventDefault()
@@ -27,6 +29,27 @@ const RecruiterLogin = () => {
                     localStorage.setItem('companyToken', data.token)
                     setShowRecruiterLogin(false)
                     navigate('/dashboard')
+                } else {
+                    toast.error(data.message)
+                }
+            } else if (state === "Forgot Password") {
+                const { data } = await axios.post(backendUrl + '/api/company/forgot-password', { email })
+                if (data.success) {
+                    toast.success(data.message)
+                    if (data.otp) {
+                        setOtp(data.otp)
+                    }
+                    setState("Reset Password")
+                } else {
+                    toast.error(data.message)
+                }
+            } else if (state === "Reset Password") {
+                const { data } = await axios.post(backendUrl + '/api/company/reset-password', { email, otp, newPassword })
+                if (data.success) {
+                    toast.success(data.message)
+                    setState("Login")
+                    setOtp('')
+                    setNewPassword('')
                 } else {
                     toast.error(data.message)
                 }
@@ -68,73 +91,128 @@ const RecruiterLogin = () => {
                         Recruiter {state}
                     </h1>
                     <p className='text-xs text-slate-400 mt-2 font-medium'>
-                        {state === "Login" ? "Welcome back! Please sign in to your company dashboard." : "Get started by creating a recruiter account."}
+                        {state === "Login"
+                            ? "Welcome back! Please sign in to your company dashboard."
+                            : state === "Forgot Password"
+                            ? "Enter your email address to receive a verification OTP."
+                            : state === "Reset Password"
+                            ? "Enter the OTP code sent to your email and your new password."
+                            : "Get started by creating a recruiter account."}
                     </p>
                 </div>
-                {state === "Sign Up" && isTextDataSubmited
-                    ? (
-                        <div className="my-6">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 text-center">Company Logo</label>
-                            <label 
-                                htmlFor="image" 
-                                className='flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-indigo-500 rounded-2xl p-6 cursor-pointer bg-slate-50/50 hover:bg-indigo-50/10 transition-all duration-200'
-                            >
-                                <img 
-                                    className={`${image ? 'w-20 h-20 object-cover rounded-2xl shadow-md border' : 'w-16 opacity-60'} mb-3`} 
-                                    src={image ? URL.createObjectURL(image) : assets.upload_area} 
-                                    alt="" 
-                                />
-                                <span className="text-xs font-bold text-slate-500">
-                                    {image ? "Change Logo" : "Upload Company Logo"}
-                                </span>
-                                <span className="text-[10px] text-slate-400 mt-1">PNG, JPG up to 5MB</span>
-                                <input onChange={e => setImage(e.target.files[0])} type="file" id='image' hidden required />
-                            </label>
+                {state === "Forgot Password" ? (
+                    <div className="space-y-4">
+                        <div className='border border-slate-200 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100/50 px-4 py-3 flex items-center gap-2.5 rounded-2xl transition-all duration-200'>
+                            <img className="h-4.5 opacity-55" src={assets.email_icon} alt="" />
+                            <input 
+                                className='outline-none text-sm text-slate-800 placeholder-slate-400 w-full font-medium' 
+                                onChange={e => setEmail(e.target.value)} 
+                                value={email} 
+                                type="email" 
+                                placeholder='Email Address' 
+                                required 
+                            />
                         </div>
-                    )
-                    : (
-                        <div className="space-y-4">
-                            {state !== 'Login' && (
-                                <div className='border border-slate-200 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100/50 px-4 py-3 flex items-center gap-2.5 rounded-2xl transition-all duration-200'>
-                                    <img className="h-4.5 opacity-55" src={assets.person_icon} alt="" />
-                                    <input 
-                                        className='outline-none text-sm text-slate-800 placeholder-slate-400 w-full font-medium' 
-                                        onChange={e => setName(e.target.value)} 
-                                        value={name} 
-                                        type="text" 
-                                        placeholder='Company Name' 
-                                        required 
-                                    />
-                                </div>
-                            )}
+                    </div>
+                ) : state === "Reset Password" ? (
+                    <div className="space-y-4">
+                        <div className='border border-slate-200 bg-slate-50 px-4 py-3 flex items-center gap-2.5 rounded-2xl transition-all duration-200'>
+                            <img className="h-4.5 opacity-40" src={assets.email_icon} alt="" />
+                            <input 
+                                className='outline-none text-sm text-slate-500 bg-transparent w-full font-medium' 
+                                value={email} 
+                                type="email" 
+                                placeholder='Email Address' 
+                                readOnly
+                            />
+                        </div>
+                        <div className='border border-slate-200 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100/50 px-4 py-3 flex items-center gap-2.5 rounded-2xl transition-all duration-200'>
+                            <img className="h-4.5 opacity-55" src={assets.lock_icon} alt="" />
+                            <input 
+                                className='outline-none text-sm text-slate-800 placeholder-slate-400 w-full font-medium' 
+                                onChange={e => setOtp(e.target.value)} 
+                                value={otp} 
+                                type="text" 
+                                placeholder='OTP Code' 
+                                required 
+                            />
+                        </div>
+                        <div className='border border-slate-200 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100/50 px-4 py-3 flex items-center gap-2.5 rounded-2xl transition-all duration-200'>
+                            <img className="h-4.5 opacity-55" src={assets.lock_icon} alt="" />
+                            <input 
+                                className='outline-none text-sm text-slate-800 placeholder-slate-400 w-full font-medium' 
+                                onChange={e => setNewPassword(e.target.value)} 
+                                value={newPassword} 
+                                type="password" 
+                                placeholder='New Password' 
+                                required 
+                            />
+                        </div>
+                    </div>
+                ) : state === "Sign Up" && isTextDataSubmited ? (
+                    <div className="my-6">
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 text-center">Company Logo</label>
+                        <label 
+                            htmlFor="image" 
+                            className='flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-indigo-500 rounded-2xl p-6 cursor-pointer bg-slate-50/50 hover:bg-indigo-50/10 transition-all duration-200'
+                        >
+                            <img 
+                                className={`${image ? 'w-20 h-20 object-cover rounded-2xl shadow-md border' : 'w-16 opacity-60'} mb-3`} 
+                                src={image ? URL.createObjectURL(image) : assets.upload_area} 
+                                alt="" 
+                            />
+                            <span className="text-xs font-bold text-slate-500">
+                                {image ? "Change Logo" : "Upload Company Logo"}
+                            </span>
+                            <span className="text-[10px] text-slate-400 mt-1">PNG, JPG up to 5MB</span>
+                            <input onChange={e => setImage(e.target.files[0])} type="file" id='image' hidden required />
+                        </label>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {state !== 'Login' && (
                             <div className='border border-slate-200 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100/50 px-4 py-3 flex items-center gap-2.5 rounded-2xl transition-all duration-200'>
-                                <img className="h-4.5 opacity-55" src={assets.email_icon} alt="" />
+                                <img className="h-4.5 opacity-55" src={assets.person_icon} alt="" />
                                 <input 
                                     className='outline-none text-sm text-slate-800 placeholder-slate-400 w-full font-medium' 
-                                    onChange={e => setEmail(e.target.value)} 
-                                    value={email} 
-                                    type="email" 
-                                    placeholder='Email Address' 
+                                    onChange={e => setName(e.target.value)} 
+                                    value={name} 
+                                    type="text" 
+                                    placeholder='Company Name' 
                                     required 
                                 />
                             </div>
-                            <div className='border border-slate-200 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100/50 px-4 py-3 flex items-center gap-2.5 rounded-2xl transition-all duration-200'>
-                                <img className="h-4.5 opacity-55" src={assets.lock_icon} alt="" />
-                                <input 
-                                    className='outline-none text-sm text-slate-800 placeholder-slate-400 w-full font-medium' 
-                                    onChange={e => setPassword(e.target.value)} 
-                                    value={password} 
-                                    type="password" 
-                                    placeholder='Password' 
-                                    required 
-                                />
-                            </div>
+                        )}
+                        <div className='border border-slate-200 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100/50 px-4 py-3 flex items-center gap-2.5 rounded-2xl transition-all duration-200'>
+                            <img className="h-4.5 opacity-55" src={assets.email_icon} alt="" />
+                            <input 
+                                className='outline-none text-sm text-slate-800 placeholder-slate-400 w-full font-medium' 
+                                onChange={e => setEmail(e.target.value)} 
+                                value={email} 
+                                type="email" 
+                                placeholder='Email Address' 
+                                required 
+                            />
                         </div>
-                    )
-                }
+                        <div className='border border-slate-200 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100/50 px-4 py-3 flex items-center gap-2.5 rounded-2xl transition-all duration-200'>
+                            <img className="h-4.5 opacity-55" src={assets.lock_icon} alt="" />
+                            <input 
+                                className='outline-none text-sm text-slate-800 placeholder-slate-400 w-full font-medium' 
+                                onChange={e => setPassword(e.target.value)} 
+                                value={password} 
+                                type="password" 
+                                placeholder='Password' 
+                                required 
+                            />
+                        </div>
+                    </div>
+                )}
                 {state === "Login" && (
                     <div className="text-right mt-2">
-                        <span className='text-xs text-indigo-600 hover:underline cursor-pointer font-bold'>
+                        <span 
+                            onClick={() => setState("Forgot Password")}
+                            className='text-xs text-indigo-600 hover:underline cursor-pointer font-bold'
+                        >
                             Forgot password?
                         </span>
                     </div>
@@ -143,33 +221,48 @@ const RecruiterLogin = () => {
                     type='submit' 
                     className='bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs uppercase tracking-wider py-3.5 rounded-2xl mt-6 transition duration-200 active:scale-95 shadow-md shadow-indigo-600/10 hover:shadow-[0_0_15px_rgba(99,102,241,0.35)] w-full'
                 >
-                    {state === 'Login' ? 'Login' : isTextDataSubmited ? 'Create Account' : 'Next'}
+                    {state === 'Login' 
+                        ? 'Login' 
+                        : state === 'Forgot Password'
+                        ? 'Send Reset OTP'
+                        : state === 'Reset Password'
+                        ? 'Reset Password'
+                        : isTextDataSubmited 
+                        ? 'Create Account' 
+                        : 'Next'}
                 </button>
                 <div className="text-center mt-6">
-                    {state === 'Login'
-                        ? (
-                            <p className='text-xs text-slate-400 font-medium'>
-                                Don't have a company account?{" "}
-                                <span 
-                                    className='text-indigo-600 cursor-pointer hover:underline font-bold' 
-                                    onClick={() => setState("Sign Up")}
-                                >
-                                    Sign Up
-                                </span>
-                            </p>
-                        )
-                        : (
-                            <p className='text-xs text-slate-400 font-medium'>
-                                Already have a company account?{" "}
-                                <span 
-                                    className='text-indigo-600 cursor-pointer hover:underline font-bold' 
-                                    onClick={() => { setState("Login"); setIsTextDataSubmited(false); }}
-                                >
-                                    Login
-                                </span>
-                            </p>
-                        )
-                    }
+                    {state === 'Login' ? (
+                        <p className='text-xs text-slate-400 font-medium'>
+                            Don't have a company account?{" "}
+                            <span 
+                                className='text-indigo-600 cursor-pointer hover:underline font-bold' 
+                                onClick={() => setState("Sign Up")}
+                            >
+                                Sign Up
+                            </span>
+                        </p>
+                    ) : state === 'Forgot Password' || state === 'Reset Password' ? (
+                        <p className='text-xs text-slate-400 font-medium'>
+                            Remember your password?{" "}
+                            <span 
+                                className='text-indigo-600 cursor-pointer hover:underline font-bold' 
+                                onClick={() => { setState("Login"); setIsTextDataSubmited(false); }}
+                            >
+                                Login
+                            </span>
+                        </p>
+                    ) : (
+                        <p className='text-xs text-slate-400 font-medium'>
+                            Already have a company account?{" "}
+                            <span 
+                                className='text-indigo-600 cursor-pointer hover:underline font-bold' 
+                                onClick={() => { setState("Login"); setIsTextDataSubmited(false); }}
+                            >
+                                Login
+                            </span>
+                        </p>
+                    )}
                 </div>
                 {/* Styled Close Button */}
                 <button 
