@@ -89,9 +89,10 @@ const ViewApplications = () => {
                 <td className='py-2 px-4 border-b'>
                   {(applicant.resume || (applicant.userId && applicant.userId.resume)) ? (
                     <a
-                      href={(applicant.resume || applicant.userId.resume).startsWith('http') ? (applicant.resume || applicant.userId.resume) : `${backendUrl}/${applicant.resume || applicant.userId.resume}`}
+                      href={(applicant.resume || applicant.userId.resume).startsWith('http') ? (applicant.resume || applicant.userId.resume).replace('/upload/', '/upload/fl_attachment/') : `${backendUrl}/${applicant.resume || applicant.userId.resume}`}
                       target='_blank'
                       rel='noopener noreferrer'
+                      download
                       className='bg-blue-50 text-blue-600 hover:bg-blue-100 transition px-3 py-1 rounded inline-flex gap-2 items-center cursor-pointer text-xs font-semibold'
                     >
                       Resume <img src={assets.resume_download_icon} alt="" />
