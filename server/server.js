@@ -39,6 +39,15 @@ app.use('/api/jobs', jobRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/users/ai', aiRoutes)
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err)
+  res.status(500).json({
+    success: false,
+    message: err.message || 'Internal Server Error'
+  })
+})
+
 const PORT = process.env.PORT || 5000
 
 app.listen(PORT, () => {
