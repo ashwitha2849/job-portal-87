@@ -3,6 +3,7 @@ import JobApplication from "../models/JobApplication.js"
 import User from "../models/User.js"
 import { v2 as cloudinary } from "cloudinary"
 import { clerkClient } from "@clerk/express"
+import fs from "fs"
 // Helper function to find user or auto-sync from Clerk if missing (useful for local dev without webhooks)
 const findOrCreateUser = async (userId) => {
     let user = await User.findById(userId)
@@ -71,7 +72,15 @@ export const applyForJob = async (req, res) => {
         // Resolve application-specific resume
         let applicationResume = ''
         if (req.file) {
-            applicationResume = `uploads/${req.file.filename}`
+            const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+                resource_type: "auto"
+            })
+            applicationResume = uploadResult.secure_url
+            try {
+                fs.unlinkSync(req.file.path)
+            } catch (err) {
+                console.error("Failed to delete temp file:", err)
+            }
         } else if (req.body && req.body.resume) {
             applicationResume = req.body.resume
         } else if (userData.resume) {
@@ -124,7 +133,15 @@ export const updateUserResume = async (req, res) => {
             return res.json({ success: false, message: 'User Not Found' })
         }
         if (resumeFile) {
-            userData.resume = `uploads/${resumeFile.filename}`
+            const uploadResult = await cloudinary.uploader.upload(resumeFile.path, {
+                resource_type: "auto"
+            })
+            userData.resume = uploadResult.secure_url
+            try {
+                fs.unlinkSync(resumeFile.path)
+            } catch (err) {
+                console.error("Failed to delete temp file:", err)
+            }
         }
         await userData.save()
         return res.json({ success: true, message: 'Resume Updated' })
