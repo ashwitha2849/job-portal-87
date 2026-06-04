@@ -28,8 +28,11 @@ const findOrCreateUser = async (userId) => {
 }
 // Get User Data
 export const getUserData = async (req, res) => {
-    const userId = req.auth.userId
     try {
+        const userId = req.auth?.userId
+        if (!userId) {
+            return res.json({ success: false, message: 'Unauthorized' })
+        }
         const user = await findOrCreateUser(userId)
         if (!user) {
             return res.json({ success: false, message: 'User Not Found' })
@@ -41,9 +44,17 @@ export const getUserData = async (req, res) => {
 }
 // Apply For Job
 export const applyForJob = async (req, res) => {
-    const { jobId } = req.body
-    const userId = req.auth.userId
     try {
+        const { jobId } = req.body || {}
+        const userId = req.auth?.userId
+
+        if (!userId) {
+            return res.json({ success: false, message: 'Unauthorized' })
+        }
+        if (!jobId) {
+            return res.json({ success: false, message: 'Job ID is required' })
+        }
+
         const isAlreadyApplied = await JobApplication.find({ jobId, userId })
         if (isAlreadyApplied.length > 0) {
             return res.json({ success: false, message: 'Already Applied' })
@@ -61,7 +72,7 @@ export const applyForJob = async (req, res) => {
         let applicationResume = ''
         if (req.file) {
             applicationResume = `uploads/${req.file.filename}`
-        } else if (req.body.resume) {
+        } else if (req.body && req.body.resume) {
             applicationResume = req.body.resume
         } else if (userData.resume) {
             applicationResume = userData.resume
@@ -84,7 +95,10 @@ export const applyForJob = async (req, res) => {
 // Get User Applied Applications Data
 export const getUserJobApplications = async (req, res) => {
     try {
-        const userId = req.auth.userId
+        const userId = req.auth?.userId
+        if (!userId) {
+            return res.json({ success: false, message: 'Unauthorized' })
+        }
         const applications = await JobApplication.find({ userId })
             .populate('companyId', 'name email image')
             .populate('jobId', 'title description location category level salary')
@@ -100,7 +114,10 @@ export const getUserJobApplications = async (req, res) => {
 // Update User Resume
 export const updateUserResume = async (req, res) => {
     try {
-        const userId = req.auth.userId
+        const userId = req.auth?.userId
+        if (!userId) {
+            return res.json({ success: false, message: 'Unauthorized' })
+        }
         const resumeFile = req.file
         const userData = await findOrCreateUser(userId)
         if (!userData) {
