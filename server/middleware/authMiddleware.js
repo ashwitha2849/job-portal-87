@@ -14,9 +14,13 @@ export const protectCompany = async (req,res,next) => {
 
     try {
         
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key_12345')
 
         req.company = await Company.findById(decoded.id).select('-password')
+
+        if (!req.company) {
+            return res.json({ success: false, message: 'Not authorized, Login Again' })
+        }
 
         next()
 

@@ -3,6 +3,28 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useAuth, useUser } from "@clerk/clerk-react";
 
+// Add a response interceptor to handle auth errors globally
+axios.interceptors.response.use(
+    (response) => {
+        if (response.data && response.data.success === false) {
+            const msg = response.data.message;
+            if (
+                msg === 'jwt malformed' ||
+                msg === 'jwt expired' ||
+                msg === 'invalid signature' ||
+                msg === 'Not authorized, Login Again'
+            ) {
+                localStorage.removeItem('companyToken');
+                window.location.href = '/';
+            }
+        }
+        return response;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 export const AppContext = createContext()
 
 export const AppContextProvider = (props) => {
@@ -74,9 +96,9 @@ export const AppContextProvider = (props) => {
 
             if (data.success) {
                 setUserData(data.user)
-            } else (
+            } else {
                 toast.error(data.message)
-            )
+            }
 
         } catch (error) {
             toast.error(error.message)
