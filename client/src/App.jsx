@@ -1,6 +1,7 @@
-import { useContext } from 'react'
+import { useContext, lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
+const ResumeAnalyser = lazy(() => import('./pages/ResumeAnalyser'))
 import ApplyJob from './pages/ApplyJob'
 import Applications from './pages/Applications'
 import ResumeBuilder from './pages/ResumeBuilder'
@@ -25,6 +26,7 @@ const App = () => {
         <Route path='/apply-job/:id' element={<ApplyJob />} />
         <Route path='/applications' element={<Applications />} />
         <Route path='/resume-builder' element={<ResumeBuilder />} />
+        <Route path='/resume-analyser' element={<Suspense fallback={<div style={{color:'white',textAlign:'center',padding:'4rem',background:'#0a0a0f',minHeight:'100vh'}}>⚡ Loading AI Analyser...</div>}><ResumeAnalyser /></Suspense>} />
         <Route path='/dashboard' element={<Dashboard />}>
           {
             companyToken ? <>

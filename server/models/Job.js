@@ -9,7 +9,9 @@ const jobSchema = new mongoose.Schema({
     salary: { type: Number, required: true },
     date: { type: Number, required: true },
     visible: { type: Boolean, default: true },
-    companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true }
+    companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true },
+    skills: { type: [String], default: [] },
+    embedding: { type: [Number], select: false } // vector embedding for semantic search
 })
 
 const Job = mongoose.model('Job', jobSchema)
